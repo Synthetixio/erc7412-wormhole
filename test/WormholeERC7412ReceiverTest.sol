@@ -21,10 +21,10 @@ contract WormholeERC7412ReceiverTest is Test {
 
 		function testEmitsERC7412WhenNotFound() public {
 			WormholeERC7412Receiver.CrossChainRequest[] memory dummyCcr = new WormholeERC7412Receiver.CrossChainRequest[](2);
-			dummyCcr[0] = WormholeERC7412Receiver.CrossChainRequest(13370, 1234, address(module), bytes("0x12345678"));
-			dummyCcr[1] = WormholeERC7412Receiver.CrossChainRequest(31337, 2345, address(module), bytes("0x09876543"));
+			dummyCcr[0] = IWormholeERC7412Receiver.CrossChainRequest(13370, 1234, address(module), bytes("0x12345678"));
+			dummyCcr[1] = IWormholeERC7412Receiver.CrossChainRequest(31337, 2345, address(module), bytes("0x09876543"));
 
-			vm.expectRevert(abi.encodeWithSelector(IERC7412.OracleDataRequired.selector, address(module), bytes("")));
+			vm.expectRevert(abi.encodeWithSelector(IERC7412.OracleDataRequired.selector, address(module), abi.encode(dummyCcr)));
 			module.getCrossChainData(dummyCcr, 0);
 		}
 
@@ -85,11 +85,12 @@ contract WormholeERC7412ReceiverTest is Test {
 			string memory mnemonic = "test test test test test test test test test test test junk";
 			uint256 privateKey = vm.deriveKey(mnemonic, 0);
 			(sigs[0].v, sigs[0].r, sigs[0].s) = vm.sign(privateKey, keccak256(fakeResponse));
+			sigs[0].guardianIndex = 0;
 
 			module.fulfillOracleQuery(abi.encode(fakeResponse, sigs));
 
-			WormholeERC7412Receiver.CrossChainRequest[] memory dummyCcr = new WormholeERC7412Receiver.CrossChainRequest[](1);
-			dummyCcr[0] = WormholeERC7412Receiver.CrossChainRequest(31337, 1234, address(module), bytes("0x12345678"));
+			IWormholeERC7412Receiver.CrossChainRequest[] memory dummyCcr = new WormholeERC7412Receiver.CrossChainRequest[](1);
+			dummyCcr[0] = IWormholeERC7412Receiver.CrossChainRequest(31337, 1234, address(module), bytes("0x12345678"));
 
 			bytes[] memory result = module.getCrossChainData(dummyCcr, 0);
 			require(result[0].length == 32, "cross chain data incorrect");

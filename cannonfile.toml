@@ -1,0 +1,9 @@
+name = "erc7412-wormhole"
+version = "0.0.1"
+
+[import.wormhole]
+source = "wormhole:0.0.1"
+
+[contract.WormholeERC7412Receiver]
+artifact = "WormholeERC7412Receiver"
+args = ["<%= imports.wormhole.contracts.Wormhole.address %>"]
